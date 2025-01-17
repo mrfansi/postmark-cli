@@ -20,7 +20,8 @@ use App\Contracts\EmailRepositoryInterface;
 use App\Data\EmailBatchResponse;
 use App\Data\EmailData;
 use App\Data\EmailResponse;
-use App\Data\ServerResponse;
+use App\Postmark\Concerns\HasServerToken;
+use BadMethodCallException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -36,20 +37,12 @@ use Throwable;
  */
 class Email implements EmailRepositoryInterface
 {
+    use HasServerToken;
+
     /**
      * HTTP client instance for making API requests
      */
     private PendingRequest $client;
-
-    /**
-     * Server ID to authenticate with
-     */
-    private ?int $serverId = null;
-
-    /**
-     * Server token for authentication
-     */
-    private ?string $serverToken = null;
 
     /**
      * Constructor for Email API client
@@ -62,81 +55,20 @@ class Email implements EmailRepositoryInterface
     }
 
     /**
-     * Set server ID for authentication
-     *
-     * @param  int  $serverId  Server ID from Postmark
-     */
-    public function withServer(int $serverId): self
-    {
-        $this->serverId = $serverId;
-
-        return $this;
-    }
-
-    /**
-     * Validates that server token is set before making API requests
-     *
-     * @throws InvalidArgumentException When server token is not set
-     * @throws Throwable
-     */
-    private function validateServerId(): void
-    {
-        if (empty($this->serverId)) {
-            throw new InvalidArgumentException(
-                'Server token must be set before sending emails. Use withServer() method.'
-            );
-        }
-
-        try {
-            $response = $this->client->get("/servers/$this->serverId");
-
-            if (! $response->successful()) {
-                throw new RuntimeException(
-                    sprintf('Failed to retrieve server details: %s', $response->body())
-                );
-            }
-
-            $server = ServerResponse::fromArray($response->json());
-
-            if (empty($server->apiTokens)) {
-                throw new RuntimeException('No API tokens found for server');
-            }
-
-            $this->serverToken = $server->apiTokens[0];
-
-        } catch (Throwable $e) {
-            Log::error('Failed to find server', [
-                'server_id' => $this->serverId,
-                'error' => $e->getMessage(),
-            ]);
-            throw $this->handleException($e);
-        }
-    }
-
-    /**
-     * Get HTTP client with server token header
-     */
-    private function getClient(): PendingRequest
-    {
-        return $this->client->withHeaders([
-            'X-Postmark-Server-Token' => $this->serverToken,
-        ]);
-    }
-
-    /**
      * Send a single email through Postmark API
      *
      * @param  EmailData  $data  Email data containing from, to, subject, and content
      *
-     * @throws InvalidArgumentException When server token is not set
+     * @throws BadMethodCallException When server token is not set
+     * @throws InvalidArgumentException When authentication is not set
      * @throws Throwable When API response is not successful
      */
     public function send(EmailData $data): EmailResponse
     {
         try {
-            $this->validateServerId();
+            $this->validateAuthentication();
 
-            $response = $this->getClient()->post('/email', $data->toArray());
+            $response = $this->getClientWithServerToken()->post('/email', $data->toArray());
 
             if (! $response->successful()) {
                 throw new RuntimeException(
@@ -159,15 +91,16 @@ class Email implements EmailRepositoryInterface
      *
      * @param  Collection<EmailData>  $data  Collection of email data
      *
-     * @throws InvalidArgumentException When server token is not set
+     * @throws BadMethodCallException When server token is not set
+     * @throws InvalidArgumentException When authentication is not set
      * @throws Throwable When API response is not successful
      */
     public function sendBatch(Collection $data): EmailBatchResponse
     {
         try {
-            $this->validateServerId();
+            $this->validateAuthentication();
 
-            $response = $this->getClient()->post('/email/batch', [
+            $response = $this->getClientWithServerToken()->post('/email/batch', [
                 'Messages' => $data->map(fn (EmailData $email) => $email->toArray())->toArray(),
             ]);
 
@@ -193,20 +126,21 @@ class Email implements EmailRepositoryInterface
      * @param  int  $templateId  Template identifier
      * @param  EmailData  $data  Email data
      *
-     * @throws InvalidArgumentException When server token is not set
+     * @throws BadMethodCallException When server token is not set
+     * @throws InvalidArgumentException When authentication is not set
      * @throws Throwable When API response is not successful
      */
     public function sendWithTemplate(int $templateId, EmailData $data): EmailResponse
     {
         try {
-            $this->validateServerId();
+            $this->validateAuthentication();
 
             $payload = array_merge(
                 $data->toArray(),
                 ['TemplateId' => $templateId]
             );
 
-            $response = $this->getClient()->post('/email/withTemplate', $payload);
+            $response = $this->getClientWithServerToken()->post('/email/withTemplate', $payload);
 
             if (! $response->successful()) {
                 throw new RuntimeException(
@@ -231,15 +165,16 @@ class Email implements EmailRepositoryInterface
      * @param  int  $templateId  Template identifier
      * @param  Collection<EmailData>  $data  Collection of email data
      *
-     * @throws InvalidArgumentException When server token is not set
+     * @throws BadMethodCallException When server token is not set
+     * @throws InvalidArgumentException When authentication is not set
      * @throws Throwable When API response is not successful
      */
     public function sendBatchWithTemplate(int $templateId, Collection $data): EmailBatchResponse
     {
         try {
-            $this->validateServerId();
+            $this->validateAuthentication();
 
-            $response = $this->getClient()->post('/email/batchWithTemplates', [
+            $response = $this->getClientWithServerToken()->post('/email/batchWithTemplates', [
                 'Messages' => $data->map(function (EmailData $email) use ($templateId) {
                     return array_merge(
                         $email->toArray(),
@@ -271,9 +206,9 @@ class Email implements EmailRepositoryInterface
      * @param  Throwable  $e  The exception to handle
      * @return Throwable The processed exception
      */
-    private function handleException(Throwable $e): Throwable
+    protected function handleException(Throwable $e): Throwable
     {
-        if ($e instanceof RuntimeException || $e instanceof InvalidArgumentException) {
+        if ($e instanceof RuntimeException || $e instanceof InvalidArgumentException || $e instanceof BadMethodCallException) {
             return $e;
         }
 

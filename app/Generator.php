@@ -1,5 +1,19 @@
 <?php
 
+/*
+ * Copyright (c) 2025 Muhammad irfan.
+ * All rights reserved.
+ *
+ * This project is created and maintained by Muhammad Irfan. Redistribution or modification
+ * of this code is permitted only under the terms specified in the license.
+ *
+ * @package    postmark-cli
+ * @license    MIT
+ * @author     Muhammad Irfan <mrfansi@outlook.com>
+ * @version    1.0.0
+ * @since      2025-01-18
+ */
+
 namespace App;
 
 use Illuminate\Support\Collection;
@@ -56,5 +70,36 @@ class Generator
             ->all();
 
         return [$headers, $rows];
+    }
+
+    public static function generateTestEmailContent(): array
+    {
+        $plainText = <<<'EOD'
+            Hello,
+
+            This is a test email to verify that the email system is working correctly.
+
+            Thank you,
+            EOD;
+
+        $htmlBody = <<<'HTML'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Test Email</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+            <h1>Test Email</h1>
+            <p>This is a test email to verify that the email system is working correctly.</p>
+            <p>Thank you</p>
+        </body>
+        </html>
+        HTML;
+
+        return [
+            'plain_text' => $plainText,
+            'html_body' => $htmlBody,
+        ];
     }
 }

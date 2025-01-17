@@ -862,3 +862,4 @@
 #42 /Users/mrfansi/Projects/postmark-cli/postmark-cli(35): LaravelZero\\Framework\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
 #43 {main}
 "} 
+[2025-01-17 18:59:33] development.ERROR: Failed to send email {"data":{"From":"no-reply@harisenin.com","To":"irfan@harisenin.com","Subject":"Hello, World","HtmlBody":"<h1>Hello, World</h1>","TextBody":"Hello, World","Headers":[],"TrackOpens":false,"Attachments":[],"Metadata":[]},"error":"Server token must be set first. Call withServer() or withServerToken() before this operation."} 

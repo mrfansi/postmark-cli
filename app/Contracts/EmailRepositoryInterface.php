@@ -30,9 +30,18 @@ use Illuminate\Support\Collection;
 interface EmailRepositoryInterface
 {
     /**
-     * Set server token
+     * Set server identifier for authentication
+     *
+     * @param  int  $serverId  Server identifier from Postmark
      */
     public function withServer(int $serverId): self;
+
+    /**
+     * Set server token for authentication
+     *
+     * @param  string  $serverToken  Server token from Postmark
+     */
+    public function withServerToken(string $serverToken): self;
 
     /**
      * Send a single email
