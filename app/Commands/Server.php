@@ -1,11 +1,25 @@
 <?php
 
+/*
+ * Copyright (c) 2025 Muhammad irfan.
+ * All rights reserved.
+ *
+ * This project is created and maintained by Muhammad Irfan. Redistribution or modification
+ * of this code is permitted only under the terms specified in the license.
+ *
+ * @package    postmark-cli
+ * @license    MIT
+ * @author     Muhammad Irfan <mrfansi@outlook.com>
+ * @version    1.0.0
+ * @since      2025-01-18
+ */
+
 namespace App\Commands;
 
 use App\Contracts\PostmarkFactoryInterface;
+use App\Data\ServerData;
+use App\Data\ServerResponse;
 use App\Generator;
-use App\Postmark\DTOs\ServerData;
-use App\Postmark\DTOs\ServerResponse;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use LaravelZero\Framework\Commands\Command;

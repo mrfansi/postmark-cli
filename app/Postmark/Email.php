@@ -1,11 +1,25 @@
 <?php
 
+/*
+ * Copyright (c) 2025 Muhammad irfan.
+ * All rights reserved.
+ *
+ * This project is created and maintained by Muhammad Irfan. Redistribution or modification
+ * of this code is permitted only under the terms specified in the license.
+ *
+ * @package    postmark-cli
+ * @license    MIT
+ * @author     Muhammad Irfan <mrfansi@outlook.com>
+ * @version    1.0.0
+ * @since      2025-01-18
+ */
+
 namespace App\Postmark;
 
 use App\Contracts\EmailRepositoryInterface;
-use App\Postmark\DTOs\EmailBatchResponse;
-use App\Postmark\DTOs\EmailData;
-use App\Postmark\DTOs\EmailResponse;
+use App\Data\EmailBatchResponse;
+use App\Data\EmailData;
+use App\Data\EmailResponse;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -28,7 +42,7 @@ class Email implements EmailRepositoryInterface
     /**
      * Constructor for Email API client
      *
-     * @param PendingRequest $client HTTP client for making API requests
+     * @param  PendingRequest  $client  HTTP client for making API requests
      */
     public function __construct(PendingRequest $client)
     {
@@ -44,6 +58,7 @@ class Email implements EmailRepositoryInterface
      * Send a single email through Postmark API
      *
      * @param  EmailData  $data  Email data containing from, to, subject, and content
+     *
      * @throws Throwable When API response is not successful
      */
     public function send(EmailData $data): EmailResponse
@@ -51,7 +66,7 @@ class Email implements EmailRepositoryInterface
         try {
             $response = $this->client->post('/email', $data->toArray());
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 throw new RuntimeException(
                     sprintf('Failed to send email: %s', $response->body())
                 );
@@ -71,16 +86,17 @@ class Email implements EmailRepositoryInterface
      * Send a batch of emails through Postmark API
      *
      * @param  Collection<EmailData>  $data  Collection of email data
+     *
      * @throws Throwable When API response is not successful
      */
     public function sendBatch(Collection $data): EmailBatchResponse
     {
         try {
             $response = $this->client->post('/email/batch', [
-                'Messages' => $data->map(fn(EmailData $email) => $email->toArray())->toArray(),
+                'Messages' => $data->map(fn (EmailData $email) => $email->toArray())->toArray(),
             ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 throw new RuntimeException(
                     sprintf('Failed to send batch emails: %s', $response->body())
                 );
@@ -101,6 +117,7 @@ class Email implements EmailRepositoryInterface
      *
      * @param  int  $templateId  Template identifier
      * @param  EmailData  $data  Email data
+     *
      * @throws Throwable When API response is not successful
      */
     public function sendWithTemplate(int $templateId, EmailData $data): EmailResponse
@@ -113,7 +130,7 @@ class Email implements EmailRepositoryInterface
 
             $response = $this->client->post('/email/withTemplate', $payload);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 throw new RuntimeException(
                     sprintf('Failed to send email with template: %s', $response->body())
                 );
@@ -135,6 +152,7 @@ class Email implements EmailRepositoryInterface
      *
      * @param  int  $templateId  Template identifier
      * @param  Collection<EmailData>  $data  Collection of email data
+     *
      * @throws Throwable When API response is not successful
      */
     public function sendBatchWithTemplate(int $templateId, Collection $data): EmailBatchResponse
@@ -149,7 +167,7 @@ class Email implements EmailRepositoryInterface
                 })->toArray(),
             ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 throw new RuntimeException(
                     sprintf('Failed to send batch emails with template: %s', $response->body())
                 );
@@ -169,7 +187,7 @@ class Email implements EmailRepositoryInterface
     /**
      * Handle exceptions from API calls
      *
-     * @param Throwable $e The exception to handle
+     * @param  Throwable  $e  The exception to handle
      * @return Throwable The processed exception
      */
     private function handleException(Throwable $e): Throwable
@@ -184,6 +202,4 @@ class Email implements EmailRepositoryInterface
             $e
         );
     }
-
-
 }

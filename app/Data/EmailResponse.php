@@ -1,25 +1,37 @@
 <?php
 
-namespace App\Postmark\DTOs;
+/*
+ * Copyright (c) 2025 Muhammad irfan.
+ * All rights reserved.
+ *
+ * This project is created and maintained by Muhammad Irfan. Redistribution or modification
+ * of this code is permitted only under the terms specified in the license.
+ *
+ * @package    postmark-cli
+ * @license    MIT
+ * @author     Muhammad Irfan <mrfansi@outlook.com>
+ * @version    1.0.0
+ * @since      2025-01-18
+ */
+
+namespace App\Data;
 
 /**
  * Email Response Data Transfer Object
  *
  * This class represents the response data structure after sending an email through Postmark.
  * It ensures type safety and data validation.
- *
- * @package App\Postmark\DTOs
  */
 readonly class EmailResponse
 {
     /**
      * Create a new EmailResponse instance
      *
-     * @param string $to The recipient email address
-     * @param string $submittedAt The timestamp when the email was submitted (ISO 8601 format)
-     * @param string $messageId The unique identifier for the email message
-     * @param int $errorCode The error code (0 indicates success)
-     * @param string $message The response message (e.g., "OK" for successful submission)
+     * @param  string  $to  The recipient email address
+     * @param  string  $submittedAt  The timestamp when the email was submitted (ISO 8601 format)
+     * @param  string  $messageId  The unique identifier for the email message
+     * @param  int  $errorCode  The error code (0 indicates success)
+     * @param  string  $message  The response message (e.g., "OK" for successful submission)
      */
     public function __construct(
         public string $to,
@@ -32,7 +44,7 @@ readonly class EmailResponse
     /**
      * Create an EmailResponse instance from an array
      *
-     * @param array $data Email response data from API response
+     * @param  array  $data  Email response data from API response
      * @return self New EmailResponse instance
      */
     public static function fromArray(array $data): self
@@ -64,8 +76,6 @@ readonly class EmailResponse
 
     /**
      * Check if the email was sent successfully
-     *
-     * @return bool
      */
     public function isSuccess(): bool
     {

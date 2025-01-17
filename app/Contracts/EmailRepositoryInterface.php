@@ -1,10 +1,24 @@
 <?php
 
+/*
+ * Copyright (c) 2025 Muhammad irfan.
+ * All rights reserved.
+ *
+ * This project is created and maintained by Muhammad Irfan. Redistribution or modification
+ * of this code is permitted only under the terms specified in the license.
+ *
+ * @package    postmark-cli
+ * @license    MIT
+ * @author     Muhammad Irfan <mrfansi@outlook.com>
+ * @version    1.0.0
+ * @since      2025-01-18
+ */
+
 namespace App\Contracts;
 
-use App\Postmark\DTOs\EmailBatchResponse;
-use App\Postmark\DTOs\EmailData;
-use App\Postmark\DTOs\EmailResponse;
+use App\Data\EmailBatchResponse;
+use App\Data\EmailData;
+use App\Data\EmailResponse;
 use Illuminate\Support\Collection;
 
 /**

@@ -1,12 +1,26 @@
 <?php
 
+/*
+ * Copyright (c) 2025 Muhammad irfan.
+ * All rights reserved.
+ *
+ * This project is created and maintained by Muhammad Irfan. Redistribution or modification
+ * of this code is permitted only under the terms specified in the license.
+ *
+ * @package    postmark-cli
+ * @license    MIT
+ * @author     Muhammad Irfan <mrfansi@outlook.com>
+ * @version    1.0.0
+ * @since      2025-01-18
+ */
+
 namespace App\Commands;
 
 use App\Contracts\PostmarkFactoryInterface;
+use App\Data\SenderData;
+use App\Data\SenderListResponse;
+use App\Data\SenderResponse;
 use App\Generator;
-use App\Postmark\DTOs\SenderData;
-use App\Postmark\DTOs\SenderListResponse;
-use App\Postmark\DTOs\SenderResponse;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use LaravelZero\Framework\Commands\Command;
@@ -340,11 +354,11 @@ class Sender extends Command
             'DKIM Verified' => $sender->dkimVerified ? 'Yes' : 'No',
             'Weak DKIM' => $sender->weakDKIM ? 'Yes' : 'No',
             'DKIM Host' => $sender->dkimHost == '' ? 'Not set' : $sender->dkimHost,
-            'DKIM Text Value' => "[****]",
+            'DKIM Text Value' => '[****]',
             'DKIM Pending Host' => $sender->dkimPendingHost == '' ? 'Not set' : $sender->dkimPendingHost,
             'DKIM Pending Text Value' => $sender->dkimPendingTextValue == '' ? 'Not set' : $sender->dkimPendingTextValue,
             'DKIM Revoked Host' => $sender->dkimRevokedHost === '' ? 'Not set' : $sender->dkimRevokedHost,
-            'DKIM Revoked Text Value' => "[****]",
+            'DKIM Revoked Text Value' => '[****]',
             'Safe To Remove Revoked Key From DNS' => $sender->safeToRemoveRevokedKeyFromDNS ? 'Yes' : 'No',
             'DKIM Update Status' => $sender->dkimUpdateStatus,
             'Return Path Domain' => $sender->returnPathDomain,

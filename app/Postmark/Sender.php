@@ -1,11 +1,25 @@
 <?php
 
+/*
+ * Copyright (c) 2025 Muhammad irfan.
+ * All rights reserved.
+ *
+ * This project is created and maintained by Muhammad Irfan. Redistribution or modification
+ * of this code is permitted only under the terms specified in the license.
+ *
+ * @package    postmark-cli
+ * @license    MIT
+ * @author     Muhammad Irfan <mrfansi@outlook.com>
+ * @version    1.0.0
+ * @since      2025-01-18
+ */
+
 namespace App\Postmark;
 
 use App\Contracts\SenderRepositoryInterface;
-use App\Postmark\DTOs\SenderData;
-use App\Postmark\DTOs\SenderListResponse;
-use App\Postmark\DTOs\SenderResponse;
+use App\Data\SenderData;
+use App\Data\SenderListResponse;
+use App\Data\SenderResponse;
 use App\Services\SenderCacheService;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
@@ -41,8 +55,8 @@ class Sender implements SenderRepositoryInterface
     /**
      * Constructor for Sender API client
      *
-     * @param PendingRequest $client HTTP client for making API requests
-     * @param SenderCacheService $cacheService Cache service for sender data
+     * @param  PendingRequest  $client  HTTP client for making API requests
+     * @param  SenderCacheService  $cacheService  Cache service for sender data
      */
     public function __construct(PendingRequest $client, SenderCacheService $cacheService)
     {
@@ -53,8 +67,8 @@ class Sender implements SenderRepositoryInterface
     /**
      * Retrieve a list of senders from Postmark API
      *
-     * @param int $count Number of senders to retrieve (1-500)
-     * @param int $offset Pagination offset (>= 0)
+     * @param  int  $count  Number of senders to retrieve (1-500)
+     * @param  int  $offset  Pagination offset (>= 0)
      * @return Collection<SenderResponse> Collection of sender objects
      *
      * @throws Throwable When API response is not successful
@@ -75,14 +89,14 @@ class Sender implements SenderRepositoryInterface
                 'offset' => $offset,
             ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 throw new RuntimeException(
                     sprintf('Failed to retrieve senders: %s', $response->body())
                 );
             }
 
             $senders = collect($response->json('SenderSignatures'))
-                ->map(fn(array $sender) => SenderListResponse::fromArray($sender));
+                ->map(fn (array $sender) => SenderListResponse::fromArray($sender));
 
             $this->cacheService->put($cacheKey, $senders);
 
@@ -100,7 +114,7 @@ class Sender implements SenderRepositoryInterface
     /**
      * Retrieve sender details by ID
      *
-     * @param int $id Sender ID to retrieve
+     * @param  int  $id  Sender ID to retrieve
      * @return SenderResponse Sender details
      *
      * @throws InvalidArgumentException When sender ID is invalid
@@ -115,7 +129,7 @@ class Sender implements SenderRepositoryInterface
         try {
             $response = $this->client->get("/senders/$id");
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 throw new RuntimeException(
                     sprintf('Failed to retrieve sender details: %s', $response->body())
                 );
@@ -134,7 +148,7 @@ class Sender implements SenderRepositoryInterface
     /**
      * Create new sender
      *
-     * @param SenderData $data Sender data
+     * @param  SenderData  $data  Sender data
      * @return SenderResponse Created sender details
      *
      * @throws ConnectionException When API connection fails
@@ -146,7 +160,7 @@ class Sender implements SenderRepositoryInterface
         try {
             $response = $this->client->post('/senders', $data->toArray());
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 throw new RuntimeException(
                     sprintf('Failed to create sender: %s', $response->body())
                 );
@@ -165,8 +179,8 @@ class Sender implements SenderRepositoryInterface
     /**
      * Update sender
      *
-     * @param int $id Sender ID to update
-     * @param SenderData $data Sender data
+     * @param  int  $id  Sender ID to update
+     * @param  SenderData  $data  Sender data
      * @return SenderResponse Updated sender details
      *
      * @throws InvalidArgumentException When sender ID is invalid
@@ -181,7 +195,7 @@ class Sender implements SenderRepositoryInterface
         try {
             $response = $this->client->put("/senders/$id", $data->toArray());
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 throw new RuntimeException(
                     sprintf('Failed to update sender: %s', $response->body())
                 );
@@ -201,7 +215,7 @@ class Sender implements SenderRepositoryInterface
     /**
      * Delete sender
      *
-     * @param int $id Sender ID to delete
+     * @param  int  $id  Sender ID to delete
      * @return bool True if deletion was successful
      *
      * @throws InvalidArgumentException When sender ID is invalid
@@ -228,8 +242,8 @@ class Sender implements SenderRepositoryInterface
     /**
      * Validate pagination parameters
      *
-     * @param int $count Number of items per page
-     * @param int $offset Pagination offset
+     * @param  int  $count  Number of items per page
+     * @param  int  $offset  Pagination offset
      *
      * @throws InvalidArgumentException When parameters are invalid
      */
@@ -251,7 +265,7 @@ class Sender implements SenderRepositoryInterface
     /**
      * Validate sender ID
      *
-     * @param int $id Sender ID
+     * @param  int  $id  Sender ID
      *
      * @throws InvalidArgumentException When ID is invalid
      */
@@ -265,7 +279,7 @@ class Sender implements SenderRepositoryInterface
     /**
      * Handle exception and convert to appropriate type
      *
-     * @param Throwable $e Exception to handle
+     * @param  Throwable  $e  Exception to handle
      * @return Throwable Converted exception
      */
     private function handleException(Throwable $e): Throwable

@@ -1,10 +1,24 @@
 <?php
 
+/*
+ * Copyright (c) 2025 Muhammad irfan.
+ * All rights reserved.
+ *
+ * This project is created and maintained by Muhammad Irfan. Redistribution or modification
+ * of this code is permitted only under the terms specified in the license.
+ *
+ * @package    postmark-cli
+ * @license    MIT
+ * @author     Muhammad Irfan <mrfansi@outlook.com>
+ * @version    1.0.0
+ * @since      2025-01-18
+ */
+
 namespace App\Postmark;
 
 use App\Contracts\ServerRepositoryInterface;
-use App\Postmark\DTOs\ServerData;
-use App\Postmark\DTOs\ServerResponse;
+use App\Data\ServerData;
+use App\Data\ServerResponse;
 use App\Services\ServerCacheService;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
@@ -133,7 +147,7 @@ class Server implements ServerRepositoryInterface
     /**
      * Retrieve server details by ID
      *
-     * @param int $id Server ID to retrieve
+     * @param  int  $id  Server ID to retrieve
      * @return ServerResponse Server details
      *
      * @throws InvalidArgumentException When server ID is invalid
@@ -167,7 +181,7 @@ class Server implements ServerRepositoryInterface
     /**
      * Create new server
      *
-     * @param ServerData $data Server data
+     * @param  ServerData  $data  Server data
      * @return ServerResponse Created server details
      *
      * @throws ConnectionException When API connection fails
@@ -198,8 +212,8 @@ class Server implements ServerRepositoryInterface
     /**
      * Update server
      *
-     * @param int $id Server ID to update
-     * @param ServerData $data Server data
+     * @param  int  $id  Server ID to update
+     * @param  ServerData  $data  Server data
      * @return ServerResponse Updated server details
      *
      * @throws InvalidArgumentException When server ID is invalid
@@ -234,7 +248,7 @@ class Server implements ServerRepositoryInterface
     /**
      * Delete server
      *
-     * @param int $id Server ID to delete
+     * @param  int  $id  Server ID to delete
      * @return bool True if deletion was successful
      *
      * @throws InvalidArgumentException When server ID is invalid

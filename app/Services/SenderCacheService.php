@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2025 Muhammad irfan.
  * All rights reserved.
@@ -15,17 +16,15 @@
 
 namespace App\Services;
 
-use App\Postmark\DTOs\SenderResponse;
-use Illuminate\Support\Collection;
+use App\Data\SenderResponse;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
+use Illuminate\Support\Collection;
 use Psr\SimpleCache\InvalidArgumentException;
 
 /**
  * Server Cache Service
  *
  * This service handles caching operations for server data.
- *
- * @package App\Services
  */
 class SenderCacheService
 {
@@ -47,7 +46,7 @@ class SenderCacheService
     /**
      * Constructor
      *
-     * @param CacheInterface $cache Cache implementation
+     * @param  CacheInterface  $cache  Cache implementation
      */
     public function __construct(CacheInterface $cache)
     {
@@ -57,8 +56,9 @@ class SenderCacheService
     /**
      * Get servers from cache
      *
-     * @param string $key Cache key
+     * @param  string  $key  Cache key
      * @return Collection<SenderResponse>|null
+     *
      * @throws InvalidArgumentException
      */
     public function get(string $key): ?Collection
@@ -69,9 +69,9 @@ class SenderCacheService
     /**
      * Store senders in cache
      *
-     * @param string $key Cache key
-     * @param Collection<SenderResponse> $senders Senders to cache
-     * @return bool
+     * @param  string  $key  Cache key
+     * @param  Collection<SenderResponse>  $senders  Senders to cache
+     *
      * @throws InvalidArgumentException
      */
     public function put(string $key, Collection $senders): bool
@@ -82,8 +82,8 @@ class SenderCacheService
     /**
      * Check if key exists in cache
      *
-     * @param string $key Cache key
-     * @return bool
+     * @param  string  $key  Cache key
+     *
      * @throws InvalidArgumentException
      */
     public function has(string $key): bool
@@ -94,8 +94,8 @@ class SenderCacheService
     /**
      * Generate cache key for server list
      *
-     * @param int $count Number of items per page
-     * @param int $offset Pagination offset
+     * @param  int  $count  Number of items per page
+     * @param  int  $offset  Pagination offset
      * @return string Cache key
      */
     public function generateKey(int $count, int $offset): string

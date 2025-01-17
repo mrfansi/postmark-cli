@@ -1,18 +1,30 @@
 <?php
 
+/*
+ * Copyright (c) 2025 Muhammad irfan.
+ * All rights reserved.
+ *
+ * This project is created and maintained by Muhammad Irfan. Redistribution or modification
+ * of this code is permitted only under the terms specified in the license.
+ *
+ * @package    postmark-cli
+ * @license    MIT
+ * @author     Muhammad Irfan <mrfansi@outlook.com>
+ * @version    1.0.0
+ * @since      2025-01-18
+ */
+
 namespace App\Services;
 
-use App\Postmark\DTOs\ServerResponse;
-use Illuminate\Support\Collection;
+use App\Data\ServerResponse;
 use Illuminate\Contracts\Cache\Repository as CacheInterface;
+use Illuminate\Support\Collection;
 use Psr\SimpleCache\InvalidArgumentException;
 
 /**
  * Server Cache Service
  *
  * This service handles caching operations for server data.
- *
- * @package App\Services
  */
 class ServerCacheService
 {
@@ -34,7 +46,7 @@ class ServerCacheService
     /**
      * Constructor
      *
-     * @param CacheInterface $cache Cache implementation
+     * @param  CacheInterface  $cache  Cache implementation
      */
     public function __construct(CacheInterface $cache)
     {
@@ -44,8 +56,9 @@ class ServerCacheService
     /**
      * Get servers from cache
      *
-     * @param string $key Cache key
+     * @param  string  $key  Cache key
      * @return Collection<ServerResponse>|null
+     *
      * @throws InvalidArgumentException
      */
     public function get(string $key): ?Collection
@@ -56,9 +69,9 @@ class ServerCacheService
     /**
      * Store servers in cache
      *
-     * @param string $key Cache key
-     * @param Collection<ServerResponse> $servers Servers to cache
-     * @return bool
+     * @param  string  $key  Cache key
+     * @param  Collection<ServerResponse>  $servers  Servers to cache
+     *
      * @throws InvalidArgumentException
      */
     public function put(string $key, Collection $servers): bool
@@ -69,8 +82,8 @@ class ServerCacheService
     /**
      * Check if key exists in cache
      *
-     * @param string $key Cache key
-     * @return bool
+     * @param  string  $key  Cache key
+     *
      * @throws InvalidArgumentException
      */
     public function has(string $key): bool
@@ -81,9 +94,9 @@ class ServerCacheService
     /**
      * Generate cache key for server list
      *
-     * @param int $count Number of items per page
-     * @param int $offset Pagination offset
-     * @param string $name Server name filter
+     * @param  int  $count  Number of items per page
+     * @param  int  $offset  Pagination offset
+     * @param  string  $name  Server name filter
      * @return string Cache key
      */
     public function generateKey(int $count, int $offset, string $name): string
