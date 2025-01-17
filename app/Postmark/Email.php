@@ -20,9 +20,11 @@ use App\Contracts\EmailRepositoryInterface;
 use App\Data\EmailBatchResponse;
 use App\Data\EmailData;
 use App\Data\EmailResponse;
+use App\Data\ServerResponse;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
 
@@ -40,6 +42,16 @@ class Email implements EmailRepositoryInterface
     private PendingRequest $client;
 
     /**
+     * Server ID to authenticate with
+     */
+    private ?int $serverId = null;
+
+    /**
+     * Server token for authentication
+     */
+    private ?string $serverToken = null;
+
+    /**
      * Constructor for Email API client
      *
      * @param  PendingRequest  $client  HTTP client for making API requests
@@ -49,9 +61,66 @@ class Email implements EmailRepositoryInterface
         $this->client = $client;
     }
 
-    public function withServerToken(string $token): void
+    /**
+     * Set server ID for authentication
+     *
+     * @param  int  $serverId  Server ID from Postmark
+     */
+    public function withServer(int $serverId): self
     {
-        $this->client->withHeader('X-Postmark-Server-Token', $token);
+        $this->serverId = $serverId;
+
+        return $this;
+    }
+
+    /**
+     * Validates that server token is set before making API requests
+     *
+     * @throws InvalidArgumentException When server token is not set
+     * @throws Throwable
+     */
+    private function validateServerId(): void
+    {
+        if (empty($this->serverId)) {
+            throw new InvalidArgumentException(
+                'Server token must be set before sending emails. Use withServer() method.'
+            );
+        }
+
+        try {
+            $response = $this->client->get("/servers/$this->serverId");
+
+            if (! $response->successful()) {
+                throw new RuntimeException(
+                    sprintf('Failed to retrieve server details: %s', $response->body())
+                );
+            }
+
+            $server = ServerResponse::fromArray($response->json());
+
+            if (empty($server->apiTokens)) {
+                throw new RuntimeException('No API tokens found for server');
+            }
+
+            $this->serverToken = $server->apiTokens[0];
+
+        } catch (Throwable $e) {
+            Log::error('Failed to find server', [
+                'server_id' => $this->serverId,
+                'error' => $e->getMessage(),
+            ]);
+            throw $this->handleException($e);
+        }
+    }
+
+    /**
+     * Get HTTP client with server token header
+     */
+    private function getClient(): PendingRequest
+    {
+        return $this->client->withHeaders([
+            'X-Postmark-Server-Token' => $this->serverToken,
+        ]);
     }
 
     /**
@@ -59,12 +128,15 @@ class Email implements EmailRepositoryInterface
      *
      * @param  EmailData  $data  Email data containing from, to, subject, and content
      *
+     * @throws InvalidArgumentException When server token is not set
      * @throws Throwable When API response is not successful
      */
     public function send(EmailData $data): EmailResponse
     {
         try {
-            $response = $this->client->post('/email', $data->toArray());
+            $this->validateServerId();
+
+            $response = $this->getClient()->post('/email', $data->toArray());
 
             if (! $response->successful()) {
                 throw new RuntimeException(
@@ -87,12 +159,15 @@ class Email implements EmailRepositoryInterface
      *
      * @param  Collection<EmailData>  $data  Collection of email data
      *
+     * @throws InvalidArgumentException When server token is not set
      * @throws Throwable When API response is not successful
      */
     public function sendBatch(Collection $data): EmailBatchResponse
     {
         try {
-            $response = $this->client->post('/email/batch', [
+            $this->validateServerId();
+
+            $response = $this->getClient()->post('/email/batch', [
                 'Messages' => $data->map(fn (EmailData $email) => $email->toArray())->toArray(),
             ]);
 
@@ -118,17 +193,20 @@ class Email implements EmailRepositoryInterface
      * @param  int  $templateId  Template identifier
      * @param  EmailData  $data  Email data
      *
+     * @throws InvalidArgumentException When server token is not set
      * @throws Throwable When API response is not successful
      */
     public function sendWithTemplate(int $templateId, EmailData $data): EmailResponse
     {
         try {
+            $this->validateServerId();
+
             $payload = array_merge(
                 $data->toArray(),
                 ['TemplateId' => $templateId]
             );
 
-            $response = $this->client->post('/email/withTemplate', $payload);
+            $response = $this->getClient()->post('/email/withTemplate', $payload);
 
             if (! $response->successful()) {
                 throw new RuntimeException(
@@ -153,12 +231,15 @@ class Email implements EmailRepositoryInterface
      * @param  int  $templateId  Template identifier
      * @param  Collection<EmailData>  $data  Collection of email data
      *
+     * @throws InvalidArgumentException When server token is not set
      * @throws Throwable When API response is not successful
      */
     public function sendBatchWithTemplate(int $templateId, Collection $data): EmailBatchResponse
     {
         try {
-            $response = $this->client->post('/email/batchWithTemplates', [
+            $this->validateServerId();
+
+            $response = $this->getClient()->post('/email/batchWithTemplates', [
                 'Messages' => $data->map(function (EmailData $email) use ($templateId) {
                     return array_merge(
                         $email->toArray(),
@@ -192,7 +273,7 @@ class Email implements EmailRepositoryInterface
      */
     private function handleException(Throwable $e): Throwable
     {
-        if ($e instanceof RuntimeException) {
+        if ($e instanceof RuntimeException || $e instanceof InvalidArgumentException) {
             return $e;
         }
 

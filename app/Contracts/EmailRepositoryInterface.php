@@ -31,10 +31,8 @@ interface EmailRepositoryInterface
 {
     /**
      * Set server token
-     *
-     * @param  string  $token  Server token
      */
-    public function withServerToken(string $token): void;
+    public function withServer(int $serverId): self;
 
     /**
      * Send a single email
